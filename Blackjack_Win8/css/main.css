@@ -1,0 +1,21 @@
+﻿body {
+    font-family:
+    background-image: linear-gradient(to bottom, #dfe7eb 0%, #f6f6f6 30%);
+}
+
+
+#wrapper {
+    border: 1px solid #999;
+    box-shadow: #dedede 10px inset;
+    height: 500px;
+    margin:50px 100px 0 100px;
+}
+
+#log {
+    border: 1px solid #999;
+    box-shadow: #dedede 10px inset;
+    height: 125px;
+    margin:10px;
+    font-family:'MS UI Gothic';
+    overflow:auto;
+}

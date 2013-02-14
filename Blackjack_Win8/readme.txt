@@ -1,0 +1,1 @@
+﻿A BlackJack simulation, written as a Windows 8 Store App using HTML, CSS and JavaScript.  
