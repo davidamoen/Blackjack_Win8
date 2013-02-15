@@ -6,6 +6,15 @@
 
             var shoe = new Shoe(6);
             shoe.Shuffle(7);
+            shoe.AddRedCard();
+
+            var hand = new Hand();
+
+            hand.Cards.push(new Card("Hearts", "Ace"));
+            hand.Cards.push(new Card("Spades", "Five"));
+
+            var isblackjack = hand.HasAce();
+
         }
     });
 

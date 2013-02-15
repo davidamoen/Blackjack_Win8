@@ -64,7 +64,7 @@
     <Content Include="css\default.css" />
     <Content Include="js\main.js" />
     <Content Include="js\tests.js" />
-    <Content Include="readme.txt" />
+    <Content Include="readme" />
     <Content Include="test.html" />
     <None Include="Blackjack_Win8_TemporaryKey.pfx" />
   </ItemGroup>
