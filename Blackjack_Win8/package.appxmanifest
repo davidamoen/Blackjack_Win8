@@ -1,48 +1,31 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/2010/manifest">
-
-  <Identity
-    Name="96d2e0ef-880b-40f5-a3ce-b22953750e78"
-    Version="1.0.0.0"
-    Publisher="CN=david_000" />
-
+  <Identity Name="96d2e0ef-880b-40f5-a3ce-b22953750e78" Version="1.0.0.0" Publisher="CN=david_000" />
   <Properties>
     <DisplayName>Blackjack_Win8</DisplayName>
     <PublisherDisplayName>david_000</PublisherDisplayName>
     <Logo>images\storelogo.png</Logo>
   </Properties>
-
   <Prerequisites>
     <OSMinVersion>6.2.1</OSMinVersion>
     <OSMaxVersionTested>6.2.1</OSMaxVersionTested>
   </Prerequisites>
-
   <Resources>
     <Resource Language="x-generate" />
   </Resources>
-
   <Applications>
-    <Application 
-      Id="App"
-      StartPage="default.html">
-
-      <VisualElements
-        DisplayName="Blackjack_Win8"
-        Logo="images\logo.png"
-        SmallLogo="images\smalllogo.png"
-        Description="Blackjack_Win8"
-        ForegroundText="light"
-        BackgroundColor="#464646">
-
+    <Application Id="App" StartPage="default.html">
+      <VisualElements DisplayName="Blackjack_Win8" Logo="images\sdg-logo.png" SmallLogo="images\smalllogo.png" Description="Blackjack_Win8" ForegroundText="light" BackgroundColor="#ffffff">
         <DefaultTile ShowName="allLogos" />
         <SplashScreen Image="images\splashscreen.png" />
-
+        <InitialRotationPreference>
+          <Rotation Preference="landscape" />
+          <Rotation Preference="landscapeFlipped" />
+        </InitialRotationPreference>
       </VisualElements>
     </Application>
   </Applications>
-
   <Capabilities>
     <Capability Name="internetClient" />
   </Capabilities>
-
 </Package>

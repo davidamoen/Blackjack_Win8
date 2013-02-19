@@ -3,20 +3,24 @@
 
     WinJS.UI.Pages.define("default.html", {
         ready: function (element, options) {
+            document.getElementById("dealButton").addEventListener("click", function (event) {
 
-            var shoe = new Shoe(6);
-            shoe.Shuffle(7);
-            shoe.AddRedCard();
+                var game = new Game(_settings.playerCount,_settings.deckCount, _settings.shuffleCount);
+                game.PrepCards();
+                game.Deal();
 
-            var hand = new Hand();
+                game.Display();
 
-            hand.Cards.push(new Card("Hearts", "Ace"));
-            hand.Cards.push(new Card("Spades", "Five"));
+            });
 
-            var isblackjack = hand.HasAce();
+
+            SDG.configureSettings();
+
 
         }
     });
+
+
 
 
     WinJS.Namespace.define("SDG", {
@@ -30,8 +34,19 @@
         },
         rand: function (min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
+        },
+        configureSettings: function () {
+
+            WinJS.Application.onsettings = function (e) {
+
+                e.detail.applicationcommands = { "blackJackSettings": { title: "Configure Simulation", href: "/html/settings.html" } };
+                WinJS.UI.SettingsFlyout.populateSettings(e);
+                WinJS.Application.start();
+
+
+                
+            }
+
         }
     });
-
-
 })();
