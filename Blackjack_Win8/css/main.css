@@ -3,19 +3,133 @@
     background-image: linear-gradient(to bottom, #dfe7eb 0%, #f6f6f6 30%);
 }
 
-
-#wrapper {
-    border: 1px solid #999;
-    box-shadow: #dedede 10px inset;
-    height: 500px;
-    margin:50px 100px 0 100px;
+.hidden {
+    display:none;
 }
 
-#log {
-    border: 1px solid #999;
-    box-shadow: #dedede 10px inset;
-    height: 125px;
-    margin:10px;
-    font-family:'MS UI Gothic';
+section {
+    margin:0px;
+    padding:0px;
+    display:-ms-grid;
+    -ms-grid-columns:1fr;
+    -ms-grid-rows: 100px 1fr 80px;
     overflow:auto;
 }
+
+    section header {
+        background:#CAE5FF;
+        -ms-grid-row: 1;
+        -ms-grid-column: 1;
+        -ms-grid-column-span: 2;
+        padding: 20px;
+    }
+
+    section article {
+        background: #fff;
+        -ms-grid-row: 2;
+        -ms-grid-column: 1;
+        min-height:500px;
+        padding:20px;
+    }
+
+    section footer {
+        background:#fff;
+        border-top:1px solid lightgray;
+        -ms-grid-row: 3;
+        -ms-grid-column: 1;
+        -ms-grid-column-span: 2;
+        padding: 20px;
+    }
+
+#results {
+    display:-ms-flexbox;
+    -ms-flex-direction:row;
+    background: #ccc;
+    border: 1px solid #999;
+    height: 500px;
+    width: 800px;
+    -ms-flex-wrap:wrap;
+}
+
+.singleHand {
+    display: -ms-flexbox;
+    background: #fff;
+    border: 1px solid #ccc;
+    height: 124px;
+}
+
+.card {
+    width: 79px;
+    height:123px;
+    float:left;
+    background-image:url(/images/cards.png);
+}
+
+.Clubs {
+    background-position-y: 0px;
+}
+
+.Diamonds {
+    background-position-y: -123px;
+}
+
+.Hearts {
+    background-position-y: -246px;
+}
+
+.Spades {
+    background-position-y: -369px;
+}
+
+.Ace {
+    background-position-x: 0px;
+}
+
+.Deuce {
+    background-position-x: -79px;
+}
+
+.Three {
+    background-position-x: -158px;
+}
+
+.Four {
+    background-position-x: -237px;
+}
+
+.Five {
+    background-position-x: -316px;
+}
+
+.Six {
+    background-position-x: -316px;
+}
+
+.Seven {
+    background-position-x: -395px;
+}
+
+.Eight {
+    background-position-x: -474px;
+}
+
+.Nine {
+    background-position-x: -553px;
+}
+
+.Ten {
+    background-position-x: -632px;
+}
+
+.Jack {
+    background-position-x: -711px;
+}
+
+.Queen {
+    background-position-x: -790px;
+}
+
+.King {
+    background-position-x: -869px;
+}
+

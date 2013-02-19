@@ -4,69 +4,68 @@
 // Card class
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-        var Card = WinJS.Class.define(
-        function (suit, cardType) {
-            this.Suit = suit;
-            this.CardType = cardType;
-        },
-        {
-            Suit: '',
-            CardType: '',
-            CardValues: function () {
-                var arr = [];
-                switch (this.CardType) {
-                    case "Deuce":
-                        arr.push(2);
-                        break;
-                    case "Three":
-                        arr.push(3);
-                        break;
-                    case "Four":
-                        arr.push(4);
-                        break;
-                    case "Five":
-                        arr.push(5);
-                        break;
-                    case "Six":
-                        arr.push(6);
-                        break;
-                    case "Seven":
-                        arr.push(7);
-                        break;
-                    case "Eight":
-                        arr.push(8);
-                        break;
-                    case "Nine":
-                        arr.push(9);
-                        break;
-                    case "Ten":
-                    case "Jack":
-                    case "Queen":
-                    case "King":
-                        arr.push(10);
-                        break;
-                    case "Ace":
-                        arr.push(1);
-                        arr.push(11);
-                        break;
-                }
+var Card = WinJS.Class.define(
+function (suit, cardType) {
+    this.Suit = suit;
+    this.CardType = cardType;
+},
+{
+    Suit: '',
+    CardType: '',
+    CardValues: function () {
+        var arr = [];
+        switch (this.CardType) {
+            case "Deuce":
+                arr.push(2);
+                break;
+            case "Three":
+                arr.push(3);
+                break;
+            case "Four":
+                arr.push(4);
+                break;
+            case "Five":
+                arr.push(5);
+                break;
+            case "Six":
+                arr.push(6);
+                break;
+            case "Seven":
+                arr.push(7);
+                break;
+            case "Eight":
+                arr.push(8);
+                break;
+            case "Nine":
+                arr.push(9);
+                break;
+            case "Ten":
+            case "Jack":
+            case "Queen":
+            case "King":
+                arr.push(10);
+                break;
+            case "Ace":
+                arr.push(1);
+                arr.push(11);
+                break;
+        }
 
-                return arr;
-            },
-            HighValue: function () {
+        return arr;
+    },
+    HighValue: function () {
 
-                var vals = this.CardValues();
-                vals.sort();
-                return vals[vals.length - 1];
+        var vals = this.CardValues();
+        vals.sort();
+        return vals[vals.length - 1];
 
-            },
-            LowValue: function () {
-                var vals = this.CardValues();
-                vals.sort();
-                return vals[0];
-            }
-
-        });
+    },
+    LowValue: function () {
+        var vals = this.CardValues();
+        vals.sort();
+        return vals[0];
+    }
+});
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // end Card class
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -74,24 +73,22 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // Deck class
 //////////////////////////////////////////////////////////////////////////////////////////////////
-        var Deck = WinJS.Class.define(
-        function () {
-            this.Build();
-        },
-        {
-            Cards: [],
-            Build: function () {
-                this.Cards = [];
-                for (var suitIdx in Suits) {
-                    for (var cardTypeIdx in CardTypes) {
-                        this.Cards.push(new Card(Suits[suitIdx], CardTypes[cardTypeIdx]));
-                    }
-                }
+var Deck = WinJS.Class.define(
+function () {
+    this.Build();
+},
+{
+    Cards: [],
+    Build: function () {
+        this.Cards = [];
+        for (var suitIdx in Suits) {
+            for (var cardTypeIdx in CardTypes) {
+                this.Cards.push(new Card(Suits[suitIdx], CardTypes[cardTypeIdx]));
             }
+        }
+    }
 
-        });
-
-
+});
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // end Deck class
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -204,7 +201,9 @@ function (deckCount) {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 var Hand = WinJS.Class.define(
-    function () { },
+    function () {
+        this.Cards = [];
+    },
     {
         Cards: [],
         Values: function () {
@@ -288,6 +287,112 @@ var Hand = WinJS.Class.define(
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // end Hand class
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// Player class
+//////////////////////////////////////////////////////////////////////////////////////////////////
+var Player = WinJS.Class.define(
+    function (name, dollars) {
+        this.Name = name;
+        this.Dollars = dollars;
+        this.Hands = [];
+    },
+    {
+        Name: '',
+        Dollars: 0,
+        Hands: [],
+        Bet: 0,
+        PlayerAction: function () { }
+    });
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// End Player class
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// Game class
+//////////////////////////////////////////////////////////////////////////////////////////////////
+var Game = WinJS.Class.define(
+    function (playerCount, deckCount, shuffleCount) {
+        this.Players = [];
+        this.DeckCount = deckCount;
+        this.ShuffleCount = shuffleCount;
+        for (var playerIdx = 0; playerIdx < playerCount; playerIdx++) {
+            this.Players.push(new Player("Player " + (playerIdx+1), 1000));
+        }
+
+        this.Dealer = new Player("Dealer", 0);
+    },
+    {
+        Players: [],
+        Dealer: null,
+        Shoe: null,
+        DeckCount: 0,
+        ShuffleCount: 0,
+        PrepCards: function () {
+            this.Shoe = new Shoe(this.DeckCount);
+            this.Shoe.Shuffle(this.ShuffleCount);
+            this.Shoe.AddRedCard();
+        },
+        Deal: function () {
+            this.Shoe.Cards.reverse();
+            for (var cardIdx = 0; cardIdx < 2; cardIdx++) {
+                for (var playerIdx in this.Players) {
+                    var player = this.Players[playerIdx];
+                    if (cardIdx == 0) {
+                        player.Hands = [];
+                        this.Players[playerIdx].Hands.push(new Hand());
+                    }
+
+                    this.Players[playerIdx].Hands[0].Cards.push(this.Shoe.Cards.pop());
+                }
+
+                if (cardIdx == 0) {
+                    this.Dealer.Hands = [];
+                    this.Dealer.Hands.push(new Hand());
+                }
+
+                this.Dealer.Hands[0].Cards.push(this.Shoe.Cards.pop());
+            }
+
+            this.Shoe.Cards.reverse();
+        },
+        Display: function () {
+            var resultsDiv = document.getElementById("results");
+
+            if (resultsDiv) {
+
+                resultsDiv.innerHTML = '';
+
+                for (var playerIdx in this.Players) {
+                    var player = this.Players[playerIdx];
+                    var handDisplay = document.createElement('div');
+                    handDisplay.innerHTML = "<p>" + player.Name + "</p>";
+                    handDisplay.classList.add("singleHand");
+
+                    for (handIdx in player.Hands) {
+                        var hand = player.Hands[handIdx];
+                        for (var cardIdx in hand.Cards) {
+                            var card = hand.Cards[cardIdx];
+                            var cardDisplay = document.createElement('div');
+                            cardDisplay.classList.add("card");
+                            cardDisplay.classList.add(card.Suit);
+                            cardDisplay.classList.add(card.CardType);
+
+                            handDisplay.appendChild(cardDisplay);
+                        }
+                    }
+
+                    resultsDiv.appendChild(handDisplay);
+                }
+            }
+        }
+    });
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// End Game class
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 var Suits = ["Hearts", "Diamonds", "Clubs", "Spades"];

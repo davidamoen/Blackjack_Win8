@@ -34,3 +34,9 @@
 })();
 
 var _runTests = false;
+var _settings = {
+    deckCount: 6,
+    playerCount: 6,
+    shuffleCount: 7,
+    maxGames: 1000
+};
