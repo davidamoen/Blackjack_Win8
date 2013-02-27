@@ -54,6 +54,7 @@
       <SubType>Designer</SubType>
     </AppxManifest>
     <Content Include="css\main.css" />
+    <Content Include="DecisionMatrix.xml" />
     <Content Include="default.html" />
     <Content Include="html\settings.html" />
     <Content Include="images\cards.png" />
@@ -75,9 +76,6 @@
   </ItemGroup>
   <ItemGroup>
     <SDKReference Include="Microsoft.WinJS.1.0, Version=1.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\BlackjackLibrary_Store\BlackjackLibrary_Store.csproj" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\$(WMSJSProjectDirectory)\Microsoft.VisualStudio.$(WMSJSProject).targets" />
   <!-- To modify your build process, add your task inside one of the targets below then uncomment

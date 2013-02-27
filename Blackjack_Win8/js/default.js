@@ -40,3 +40,5 @@ var _settings = {
     shuffleCount: 7,
     maxGames: 1000
 };
+
+var _game;
