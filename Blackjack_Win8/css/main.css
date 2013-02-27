@@ -7,6 +7,10 @@
     display:none;
 }
 
+.bold {
+    font-weight:bold;
+}
+
 section {
     margin:0px;
     padding:0px;
@@ -44,18 +48,49 @@ section {
 #results {
     display:-ms-flexbox;
     -ms-flex-direction:row;
-    background: #ccc;
-    border: 1px solid #999;
-    height: 500px;
-    width: 800px;
+    background: #fff;
     -ms-flex-wrap:wrap;
 }
 
-.singleHand {
-    display: -ms-flexbox;
+#toprow {
+    display:-ms-grid;
     background: #fff;
+    -ms-grid-columns: 4f 1f;
+}
+
+#dealer {
+    background: #fff;
+    -ms-grid-column: 1;
+    -ms-grid-row: 1;
+}
+
+#info {
+    background: #fff;
+    -ms-grid-column: 2;
+    -ms-grid-row: 1;
+}
+
+    #info p {
+        font-size: 11px;
+        line-height:100%;
+        padding: 0;
+        margin: 0;
+    }
+
+.singleHand {
+    background: #ccc;
     border: 1px solid #ccc;
-    height: 124px;
+    height: 175px;
+    padding: 10px;
+    margin: 5px;
+
+}
+
+.singleHand p {
+    line-height:100%;
+    padding: 0;
+    margin: 0;
+    font-size:10px;
 }
 
 .card {
@@ -63,6 +98,11 @@ section {
     height:123px;
     float:left;
     background-image:url(/images/cards.png);
+}
+
+.playerHand {
+    font-weight:bold;
+    font-size: 12px;
 }
 
 .Clubs {
@@ -102,34 +142,38 @@ section {
 }
 
 .Six {
-    background-position-x: -316px;
-}
-
-.Seven {
     background-position-x: -395px;
 }
 
-.Eight {
+.Seven {
     background-position-x: -474px;
 }
 
-.Nine {
+.Eight {
     background-position-x: -553px;
 }
 
-.Ten {
+.Nine {
     background-position-x: -632px;
 }
 
-.Jack {
+.Ten {
     background-position-x: -711px;
 }
 
-.Queen {
+.Jack {
     background-position-x: -790px;
 }
 
-.King {
+.Queen {
     background-position-x: -869px;
 }
 
+.King {
+    background-position-x: -948px;
+}
+
+.hiddenCard {
+    background-position-x: -158px;
+    background-position-y: -492px;
+}

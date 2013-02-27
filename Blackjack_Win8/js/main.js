@@ -5,23 +5,26 @@
         ready: function (element, options) {
             document.getElementById("dealButton").addEventListener("click", function (event) {
 
-                var game = new Game(_settings.playerCount,_settings.deckCount, _settings.shuffleCount);
-                game.PrepCards();
-                game.Deal();
+                if (!_game) {
+                    _game = new Game(_settings.playerCount, _settings.deckCount, _settings.shuffleCount);
+                }
+                if (!_game.Shoe) {
+                    _game.PrepCards();
+                }
+                _game.Deal();
 
-                game.Display();
+                _game.Display();
+
+                _game.DisplayInfo();
+
 
             });
 
 
             SDG.configureSettings();
-
-
+            SDG.setDecisionMatrix();
         }
     });
-
-
-
 
     WinJS.Namespace.define("SDG", {
         clearLog: function () { document.querySelector("div#log").innerHTML = ""; },
@@ -42,11 +45,21 @@
                 e.detail.applicationcommands = { "blackJackSettings": { title: "Configure Simulation", href: "/html/settings.html" } };
                 WinJS.UI.SettingsFlyout.populateSettings(e);
                 WinJS.Application.start();
-
-
-                
             }
 
-        }
+        },
+        setDecisionMatrix: function () {
+            var uri = new Windows.Foundation.Uri("ms-appx:///DecisionMatrix.xml");
+            Windows.Storage.StorageFile.getFileFromApplicationUriAsync(uri).done(
+                function (file) {
+                    if (file) {
+                        Windows.Data.Xml.Dom.XmlDocument.loadFromFileAsync(file).done(function (fileContent) {
+                            //var sections = contents.documentElement.selectNodes("//section")
+                            SDG.DecisionMatrix = fileContent;
+                        })
+                    }
+                });
+        },
+        DecisionMatrix: null
     });
 })();
