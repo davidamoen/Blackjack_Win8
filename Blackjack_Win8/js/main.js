@@ -17,9 +17,7 @@
 
                 _game.DisplayInfo();
 
-
             });
-
 
             SDG.configureSettings();
             SDG.setDecisionMatrix();
