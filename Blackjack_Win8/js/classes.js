@@ -98,11 +98,16 @@ function () {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 var Shoe = WinJS.Class.define(
 function (deckCount) {
+    this.Decks = [];
+    this.Cards = [];
+    this.Shuffled = false;
     this.Build(deckCount);
+    this.CardCounter = new CardCounter();
 },
 {
     Decks: [],
-    Cards: [], 
+    Cards: [],
+    CardCounter: null,
     Build: function (deckCount) {
         for (var i = 0; i < deckCount; i++) {
             var deck = new Deck();
@@ -151,11 +156,11 @@ function (deckCount) {
 
                 // determinethe size of the first riffle and move that 
                 // number of cards from the pile to the newShoe pile
-                var riffleA = SDG.rand(1, 5);
+                var riffleA = SDG.rand(1, 3);
                 newShoe = newShoe.concat(cutA.splice(0, riffleA));
 
                 // repeat for the second pile
-                var riffleB = SDG.rand(1, 5);
+                var riffleB = SDG.rand(1, 3);
                 newShoe = newShoe.concat(cutB.splice(0, riffleB));
             }
 
@@ -168,10 +173,10 @@ function (deckCount) {
             if (cutB.length > 0) {
                 newShoe = newShoe.concat(cutB);
             }
+
+            this.Cards = newShoe;
+
         }
-
-        this.Cards = newShoe;
-
     },
     // vegas dealers put a red card in the shoe
     // when they reach that red card, they reshuffle
@@ -190,6 +195,73 @@ function (deckCount) {
         this.Cards = this.Cards.slice(0, cardPosition);
     }
 });
+
+var CardCounter = WinJS.Class.define(function () { },
+    {
+        Aces: 0,
+        Deuces: 0,
+        Threes: 0,
+        Fours: 0,
+        Fives: 0,
+        Sixes: 0,
+        Sevens: 0,
+        Eights: 0,
+        Nines: 0,
+        Tens: 0,
+        Jacks: 0,
+        Queens: 0,
+        Kings: 0,
+        FaceCards: 0,
+        TotalCards: 0,
+        AddCard: function (card) {
+            this.TotalCards++;
+            switch (card.CardType) {
+                case "Ace":
+                    this.Aces++;
+                    break;
+                case "Deuce":
+                    this.Deuces++;
+                    break;
+                case "Three":
+                    this.Threes++;
+                    break;
+                case "Four":
+                    this.Fours++;
+                    break;
+                case "Five":
+                    this.Fives++;
+                    break;
+                case "Six":
+                    this.Sixes++;
+                    break;
+                case "Seven":
+                    this.Sevens++;
+                    break;
+                case "Eight":
+                    this.Eights++;
+                    break;
+                case "Nine":
+                    this.Nines++;
+                    break;
+                case "Ten":
+                    this.Tens++;
+                    this.FaceCards++;
+                    break;
+                case "Jack":
+                    this.Jacks++;
+                    this.FaceCards++;
+                    break;
+                case "Queen":
+                    this.Queens++;
+                    this.FaceCards++;
+                    break;
+                case "King":
+                    this.Kings++;
+                    this.FaceCards++;
+                    break;
+            }
+        }
+    });
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -256,12 +328,14 @@ var Hand = WinJS.Class.define(
         },
         IsBust: function () {
             var isBust = true;
-            for (var valIdx in this.Values()) {
-                if (this.Values()[valIdx] <= 21) {
+            var vals = this.Values();
+            for (var valIdx in vals) {
+                if (vals[valIdx] <= 21) {
                     isBust = false;
                     break;
                 }
             }
+            return isBust;
         },
         IsBlackJack: function () {
             return this.Cards.length == 2
@@ -281,6 +355,19 @@ var Hand = WinJS.Class.define(
                 }
             }
             return hasAce;
+        },
+        NonAce: function () {
+            if (this.Cards.length == 2 && this.HasAce()) {
+                if (this.Cards[0].CardType == "Ace") {
+                    return this.Cards[1];
+                }
+                else {
+                    return this.Cards[0];
+                }
+            }
+            else {
+                return false;
+            }
         }
     });
 
@@ -306,7 +393,6 @@ var Player = WinJS.Class.define(
         PlayerAction: function () { }
     });
 
-
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // End Player class
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -320,7 +406,12 @@ var Game = WinJS.Class.define(
         this.DeckCount = deckCount;
         this.ShuffleCount = shuffleCount;
         for (var playerIdx = 0; playerIdx < playerCount; playerIdx++) {
-            this.Players.push(new Player("Player " + (playerIdx+1), 1000));
+            if (playerIdx == 0) {
+                this.Players.push(new Player("You", 1000));
+            }
+            else {
+                this.Players.push(new Player("Player " + (playerIdx + 1), 1000));
+            }
         }
 
         this.Dealer = new Player("Dealer", 0);
@@ -346,7 +437,17 @@ var Game = WinJS.Class.define(
                         this.Players[playerIdx].Hands.push(new Hand());
                     }
 
-                    this.Players[playerIdx].Hands[0].Cards.push(this.Shoe.Cards.pop());
+                    if (this.Shoe.Cards.length > 0) {
+                        var nextCard = this.Shoe.Cards.pop();
+                        this.Shoe.CardCounter.AddCard(nextCard);
+                        this.Players[playerIdx].Hands[0].Cards.push(nextCard);
+                    }
+                    else {
+                        this.PrepCards();
+                        var nextCard = this.Shoe.Cards.pop();
+                        this.Shoe.CardCounter.AddCard(nextCard);
+                        this.Players[playerIdx].Hands[0].Cards.push(nextCard);
+                    }
                 }
 
                 if (cardIdx == 0) {
@@ -354,46 +455,162 @@ var Game = WinJS.Class.define(
                     this.Dealer.Hands.push(new Hand());
                 }
 
-                this.Dealer.Hands[0].Cards.push(this.Shoe.Cards.pop());
+                var nextCard = this.Shoe.Cards.pop();
+                this.Shoe.CardCounter.AddCard(nextCard);
+                this.Dealer.Hands[0].Cards.push(nextCard);
             }
 
             this.Shoe.Cards.reverse();
         },
         Display: function () {
             var resultsDiv = document.getElementById("results");
+            var dealerDiv = document.getElementById("dealer");
 
-            if (resultsDiv) {
+            if (resultsDiv && dealerDiv) {
 
                 resultsDiv.innerHTML = '';
+                dealerDiv.innerHTML = '';
 
-                for (var playerIdx in this.Players) {
-                    var player = this.Players[playerIdx];
+                var tmpPlayers = [];
+                tmpPlayers.push(this.Dealer);
+                tmpPlayers = tmpPlayers.concat(this.Players);
+
+                for (var playerIdx in tmpPlayers) {
+                    var player = tmpPlayers[playerIdx];
                     var handDisplay = document.createElement('div');
-                    handDisplay.innerHTML = "<p>" + player.Name + "</p>";
+                    handDisplay.innerHTML = "<div class='playerName'>" + player.Name + "</div>";
                     handDisplay.classList.add("singleHand");
 
                     for (handIdx in player.Hands) {
                         var hand = player.Hands[handIdx];
+
+                        if (player.Name != "Dealer") {
+                            handDisplay.innerHTML += "<p class='bold'>Recomendation: " + DecisionHelper.MakeDecision(this.Dealer.Hands[0], hand) + "</p>";
+                        }
+
                         for (var cardIdx in hand.Cards) {
+
                             var card = hand.Cards[cardIdx];
                             var cardDisplay = document.createElement('div');
                             cardDisplay.classList.add("card");
-                            cardDisplay.classList.add(card.Suit);
-                            cardDisplay.classList.add(card.CardType);
 
+                            if (player.Name == "Dealer" && cardIdx == 1) {
+                                cardDisplay.classList.add("hiddenCard");
+                            }
+                            else {
+                                cardDisplay.classList.add(card.Suit);
+                                cardDisplay.classList.add(card.CardType);
+                            }
                             handDisplay.appendChild(cardDisplay);
                         }
                     }
 
-                    resultsDiv.appendChild(handDisplay);
+                    if (player.Name == "Dealer") {
+                        dealerDiv.appendChild(handDisplay);
+                    }
+                    else {
+                        resultsDiv.appendChild(handDisplay);
+                    }
                 }
             }
+        },
+        DisplayInfo: function () {
+            var html = "";
+            html += "<p><label>Total played: </label>" + this.Shoe.CardCounter.TotalCards + "</p>";
+            html += "<p><label>Deuces played: </label>" + this.Shoe.CardCounter.Deuces + "</p>";
+            html += "<p><label>Threes played: </label>" + this.Shoe.CardCounter.Threes + "</p>";
+            html += "<p><label>Fours played: </label>" + this.Shoe.CardCounter.Fours + "</p>";
+            html += "<p><label>Fives played: </label>" + this.Shoe.CardCounter.Fives + "</p>";
+            html += "<p><label>Sixes played: </label>" + this.Shoe.CardCounter.Sixes + "</p>";
+            html += "<p><label>Sevens played: </label>" + this.Shoe.CardCounter.Sevens + "</p>";
+            html += "<p><label>Eights played: </label>" + this.Shoe.CardCounter.Eights + "</p>";
+            html += "<p><label>Nines played: </label>" + this.Shoe.CardCounter.Nines + "</p>";
+            html += "<p><label>Tens played: </label>" + this.Shoe.CardCounter.Tens + "</p>";
+            html += "<p><label>Jacks played: </label>" + this.Shoe.CardCounter.Jacks + "</p>";
+            html += "<p><label>Queens played: </label>" + this.Shoe.CardCounter.Queens + "</p>";
+            html += "<p><label>Kings played: </label>" + this.Shoe.CardCounter.Kings + "</p>";
+            html += "<p><label>Aces played: </label>" + this.Shoe.CardCounter.Aces + "</p>";
+            html += "<p><label>Face cards played: </label>" + this.Shoe.CardCounter.FaceCards + "</p>";
+
+            document.getElementById("info").innerHTML = html;
         }
     });
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // End Game class
 //////////////////////////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// DecisionHelper class
+//////////////////////////////////////////////////////////////////////////////////////////////////
+function DecisionHelper() { }
+ 
+// static method MakeDecision
+DecisionHelper.MakeDecision = function(dealerHand, playerHand)
+{
+    var dm = null;
+
+    if (playerHand.IsSplittable()) {
+        var dm = SDG.DecisionMatrix.documentElement.selectSingleNode("section[@name='split']");
+    }
+    else if (playerHand.HasAce()) {
+        var dm = SDG.DecisionMatrix.documentElement.selectSingleNode("section[@name='hasAce']");
+    }
+    else {
+        var dm = SDG.DecisionMatrix.documentElement.selectSingleNode("section[@name='standard']");
+    }
+
+    if (dm) {
+
+        // get node for the appropriate dealer upcard
+        var upCardValues = dm.selectSingleNode("dealerUpCard[@value='" + dealerHand.Cards[0].CardType + "']");
+
+        if (upCardValues) {
+            var selector;
+            if (playerHand.IsSplittable()) {
+                selector = playerHand.Cards[0].HighValue();
+            }
+            else if (playerHand.HasAce()) {
+                var nonAce = playerHand.NonAce();
+                selector = nonAce.HighValue();
+            }
+            else {
+                selector = playerHand.HighValue();
+            }
+
+            var decisionValue = upCardValues.selectSingleNode("hand[@value='" + selector + "']");
+
+            if (decisionValue) {
+
+                switch (decisionValue.innerText) {
+
+                    case "H":
+                        return "Hit";
+                        break;
+                    case "D":
+                        return "Double Down";
+                        break;
+                    case "S":
+                        return "Stand";
+                        break;
+                    case "SP":
+                        return "Split";
+                        break;
+
+                }
+            }
+        }
+    }
+    else {
+        return "TBD";
+
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// End DecisionHelper class
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 var Suits = ["Hearts", "Diamonds", "Clubs", "Spades"];
 
