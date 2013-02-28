@@ -39,7 +39,8 @@ var _settings = {
     playerCount: 6,
     shuffleCount: 7,
     bet: 10, 
-    maxGames: 1000
+    maxGames: 1000,
+    dealerStands: 17
 };
 
 var _game;
