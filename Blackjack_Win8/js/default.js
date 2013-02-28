@@ -38,6 +38,7 @@ var _settings = {
     deckCount: 6,
     playerCount: 6,
     shuffleCount: 7,
+    bet: 10, 
     maxGames: 1000
 };
 

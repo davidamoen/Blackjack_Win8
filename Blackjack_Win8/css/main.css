@@ -50,6 +50,7 @@ section {
     -ms-flex-direction:row;
     background: #fff;
     -ms-flex-wrap:wrap;
+    width:5000px;
 }
 
 #toprow {
@@ -77,10 +78,17 @@ section {
         margin: 0;
     }
 
+.handInfo {
+    clear:left;
+    background:#fff;
+    padding: 5px;
+    margin:5px 0 0 0;
+}
+
 .singleHand {
     background: #ccc;
     border: 1px solid #ccc;
-    height: 175px;
+    height: 200px;
     padding: 10px;
     margin: 5px;
 
