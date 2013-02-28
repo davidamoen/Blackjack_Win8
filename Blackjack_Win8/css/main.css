@@ -85,6 +85,10 @@ section {
     margin:5px 0 0 0;
 }
 
+.accept {
+    display:none;
+}
+
 .singleHand {
     background: #ccc;
     border: 1px solid #ccc;
