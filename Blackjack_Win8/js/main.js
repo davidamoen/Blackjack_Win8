@@ -19,7 +19,6 @@
                 _game.Display();
                 _game.DisplayInfo();
                 document.getElementById("goButton").classList.remove("hidden");
-
             });
 
             document.getElementById("goButton").addEventListener("click", function (event) {
@@ -39,9 +38,6 @@
                 }
 
                 button.Game.Dealer.Hands[0].IsComplete = true;
-
-
-
                 button.Game.RefreshDisplay();
             });
         }

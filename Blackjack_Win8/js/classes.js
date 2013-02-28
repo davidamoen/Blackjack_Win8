@@ -534,8 +534,6 @@ var Game = WinJS.Class.define(
                 for (var playerIdx in tmpPlayers) {
                     var player = tmpPlayers[playerIdx];
                     var handDisplay = document.createElement('div');
-                    handDisplay.innerHTML = "<div class='playerName'>" + player.Name + "</div>";
-                    
                     handDisplay.classList.add("singleHand");
 
                     for (handIdx in player.Hands) {
@@ -565,7 +563,7 @@ var Game = WinJS.Class.define(
                         infoDisplay.classList.add("handInfo");
 
                         if (hand.IsComplete) {
-                            infoDisplay.innerHTML += "<p class='bold'>" + DecisionHelper.GetResult(this.Dealer.Hands[0], hand) + "</p>";
+                            infoDisplay.innerHTML += "<p class='bold'>" + DecisionHelper.GetResult(this.Dealer.Hands[0], hand, player) + "</p>";
                         }
                         else {
                             if (hand.IsBust()) {
@@ -586,6 +584,7 @@ var Game = WinJS.Class.define(
                                 infoDisplay.appendChild(acceptButton);
                             }
                         }
+                        handDisplay.innerHTML += "<br /><div class='playerName'>" + player.Name + " ($" + player.Dollars + ")</div>";
                     }
 
                     if (player.Name == "Dealer") {
@@ -705,20 +704,38 @@ DecisionHelper.MakeDecision = function(dealerHand, playerHand)
     }
 }
 
-DecisionHelper.GetResult = function (dealerHand, playerHand) {
+DecisionHelper.GetResult = function (dealerHand, playerHand, player) {
 
-    if (playerHand.IsBust()) return "Bust";
+    if (playerHand.IsBust()) {
+        player.Dollars -= playerHand.Bet;
+        return "Bust";
+    }
 
-    if (playerHand.Cards.length >= 5) return "Win";
+    if (playerHand.Cards.length >= 5) {
+        player.Dollars += playerHand.Bet;
+        return "Win";
+    }
 
-    if (playerHand.IsBlackJack()) return "Blackjack";
+    if (playerHand.IsBlackJack()) {
+        player.Dollars -= (playerHand.Bet * 1.5);
+        return "Blackjack";
+    }
 
-    if (dealerHand.IsBust()) return "Win";
+    if (dealerHand.IsBust()) {
+        player.Dollars += playerHand.Bet;
+        return "Win";
+    }
 
-    if (playerHand.BestValue() > dealerHand.BestValue()) return "Win";
+    if (playerHand.BestValue() > dealerHand.BestValue()) {
+        player.Dollars += playerHand.Bet;
+        return "Win";
+    }
 
-    if (playerHand.BestValue() == dealerHand.BestValue()) return "Push";
+    if (playerHand.BestValue() == dealerHand.BestValue()) {
+        return "Push";
+    }
 
+    player.Dollars -= playerHand.Bet;
     return "Lose";
 }
 
