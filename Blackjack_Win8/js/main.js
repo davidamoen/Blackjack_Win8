@@ -7,6 +7,40 @@
             SDG.configureSettings();
             SDG.setDecisionMatrix();
 
+            /*
+            var init = function () {
+                var testGame = new Game(1, 1, 1);
+                testGame.PrepCards();
+                var testHand = new Hand();
+                testHand.Cards.push(new Card("Hearts", "Six"));
+                testHand.Cards.push(new Card("Clubs", "Six"));
+                testGame.Players[0].Hands.push(testHand);
+
+                var dealerHand = new Hand();
+                dealerHand.Cards.push(new Card("Hearts", "Deuce"));
+                dealerHand.Cards.push(new Card("Clubs", "Six"));
+                testGame.Dealer.Hands.push(dealerHand);
+
+                if (testHand.IsSplittable()) {
+                    var mockBtn = document.createElement('button');
+
+                    mockBtn.addEventListener("click", testGame.AcceptRecommendation);
+                    mockBtn.Game = testGame;
+                    mockBtn.Hand = testHand;
+                    mockBtn.Recommendation = DecisionHelper.MakeDecision(testGame.Dealer.Hands[0], testHand);
+
+                    mockBtn.click();
+
+                    //var evt = document.createEvent("MouseEvents");
+                    //evt.initEvent("click", true, false);
+                    //mockBtn.dispatchEvent(evt);
+
+                }
+            }
+            */
+
+            //SDG.setDecisionMatrix(init);
+
             document.getElementById("dealButton").addEventListener("click", function (event) {
 
                 if (!_game) {
@@ -16,13 +50,26 @@
                     _game.PrepCards();
                 }
                 _game.Deal();
+
+                /*
+                var testHand = new Hand();
+                testHand.Cards.push(new Card("Hearts", "Ace"));
+                testHand.Cards.push(new Card("Clubs", "Ace"));
+
+                _game.Players[0].Hands[0] = testHand;
+                */
+
                 _game.Display();
                 _game.DisplayInfo();
                 document.getElementById("goButton").classList.remove("hidden");
-
             });
 
             document.getElementById("goButton").addEventListener("click", function (event) {
+
+                _game.Play();
+
+
+                /*
                 var buttons = document.getElementsByClassName("accept");
                 for (var buttonIdx = 0; buttonIdx < buttons.length; buttonIdx++) {
                     var button = buttons[buttonIdx];
@@ -32,17 +79,16 @@
                     }
                     button.Hand.IsComplete = true;
                 }
+                */
 
-                var dealerHand = button.Game.Dealer.Hands[0];
+                var dealerHand = _game.Dealer.Hands[0];
                 while (dealerHand.DealerMustHit()) {
                     _game.DealCardToHand(dealerHand);
                 }
 
-                button.Game.Dealer.Hands[0].IsComplete = true;
-
-
-
-                button.Game.RefreshDisplay();
+                _game.Dealer.Hands[0].IsComplete = true;
+                _game.RefreshDisplay();
+                
             });
         }
     });
