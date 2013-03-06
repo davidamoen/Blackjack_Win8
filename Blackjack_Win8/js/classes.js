@@ -418,7 +418,11 @@ var Player = WinJS.Class.define(
         Name: '',
         Dollars: 0,
         Hands: [],
-        PlayerAction: function () { }
+        PlayerAction: function () { },
+        Wins: 0,
+        Losses: 0,
+        Pushes: 0,
+        Blackjacks: 0
     });
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -490,26 +494,53 @@ var Game = WinJS.Class.define(
 
             this.Shoe.Cards.reverse();
         },
-        AcceptRecommendation: function (event) {
-            var btn = event.srcElement;
-            switch (btn.Recommendation) {
+        Play: function () {
+            var dealerHand = this.Dealer.Hands[0];
+            for (var playerIdx in this.Players) {
+                var player = this.Players[playerIdx];
+                var handIdx = 0;
+                while (handIdx < player.Hands.length) {
+                    var hand = player.Hands[handIdx];
+                    var recommendation = DecisionHelper.MakeDecision(dealerHand, hand);
+                    while (recommendation != "Stand" && recommendation != "Bust") {
+                        this.AcceptRecommendation(recommendation, hand, player);
+                        recommendation = DecisionHelper.MakeDecision(dealerHand, hand);
+                    }
+                    hand.IsComplete = true;
+                    handIdx++;
+                }
+            }
+        },
+        AcceptRecommendation: function (recommendation, hand, player) {
+            switch (recommendation) {
                 case "Stand":
-                    btn.classList.add("hidden");
-                    btn.Hand.IsStand = true;
+                    hand.IsStand = true;
                     break;
                 case "Hit":
-                case "Split": //TODO add logic for split hands
-                    btn.Game.DealCardToHand(btn.Hand);
+                    this.DealCardToHand(hand);
                     break;
                 case "Double Down":
-                    btn.Hand.IsDoubleDown = true;
-                    btn.Hand.Bet = btn.Hand.Bet * 2;
-                    btn.Game.DealCardToHand(btn.Hand);
+                    hand.IsDoubleDown = true;
+                    hand.Bet = hand.Bet * 2;
+                    this.DealCardToHand(hand);
+                    break;
+                case "Split":
+                    var newHand = new Hand();
+                    newHand.Cards.push(hand.Cards.pop());
+                    newHand.Bet = hand.Bet;
+
+                    this.DealCardToHand(hand);
+                    this.DealCardToHand(newHand);
+
+                    player.Hands.push(newHand);
                     break;
             }
 
         },
         DealCardToHand: function (Hand) {
+            if (this.Shoe.Cards.length == 0) {
+                this.PrepCards();
+            }
             var nextCard = this.Shoe.Cards.pop();
             this.Shoe.CardCounter.AddCard(nextCard);
             Hand.Cards.push(nextCard);
@@ -533,10 +564,10 @@ var Game = WinJS.Class.define(
 
                 for (var playerIdx in tmpPlayers) {
                     var player = tmpPlayers[playerIdx];
-                    var handDisplay = document.createElement('div');
-                    handDisplay.classList.add("singleHand");
 
                     for (handIdx in player.Hands) {
+                        var handDisplay = document.createElement('div');
+                        handDisplay.classList.add("singleHand");
                         var hand = player.Hands[handIdx];
 
                         if (player.Name != "Dealer") {
@@ -544,7 +575,6 @@ var Game = WinJS.Class.define(
                         }
 
                         for (var cardIdx in hand.Cards) {
-
                             var card = hand.Cards[cardIdx];
                             var cardDisplay = document.createElement('div');
                             cardDisplay.classList.add("card");
@@ -573,27 +603,33 @@ var Game = WinJS.Class.define(
                                 infoDisplay.innerHTML += "<p class='bold'>Recomendation: " + DecisionHelper.MakeDecision(this.Dealer.Hands[0], hand) + "</p>";
                             }
 
+                            /*
                             if (!hand.IsBust() && !hand.IsDoubleDown && !hand.IsStand) {
                                 var acceptButton = document.createElement('button');
                                 acceptButton.Recommendation = DecisionHelper.MakeDecision(this.Dealer.Hands[0], hand);
                                 acceptButton.Game = this;
                                 acceptButton.Hand = hand;
+                                acceptButton.Player = player;
                                 acceptButton.innerText = "Accept";
                                 acceptButton.addEventListener("click", this.AcceptRecommendation);
                                 acceptButton.classList.add("accept");
                                 infoDisplay.appendChild(acceptButton);
                             }
+                            */
                         }
                         handDisplay.innerHTML += "<br /><div class='playerName'>" + player.Name + " ($" + player.Dollars + ")</div>";
+
+                        if (player.Name == "Dealer") {
+                            dealerDiv.appendChild(handDisplay);
+                        }
+                        else {
+                            handDisplay.appendChild(infoDisplay);
+                            resultsDiv.appendChild(handDisplay);
+                        }
+
                     }
 
-                    if (player.Name == "Dealer") {
-                        dealerDiv.appendChild(handDisplay);
-                    }
-                    else {
-                        handDisplay.appendChild(infoDisplay);
-                        resultsDiv.appendChild(handDisplay);
-                    }
+
                 }
             }
         },
@@ -632,6 +668,8 @@ function DecisionHelper() { }
 // static method MakeDecision
 DecisionHelper.MakeDecision = function(dealerHand, playerHand)
 {
+    if (playerHand.Cards.length == 5) return "Stand";
+
     var dm = null;
 
     if (playerHand.IsSplittable() && playerHand.Cards.length == 2) {
@@ -704,38 +742,38 @@ DecisionHelper.MakeDecision = function(dealerHand, playerHand)
     }
 }
 
-DecisionHelper.GetResult = function (dealerHand, playerHand, player) {
+DecisionHelper.GetResult = function (dealerHand, hand, player) {
 
-    if (playerHand.IsBust()) {
-        player.Dollars -= playerHand.Bet;
+    if (hand.IsBust()) {
+        player.Dollars -= hand.Bet;
         return "Bust";
     }
 
-    if (playerHand.Cards.length >= 5) {
-        player.Dollars += playerHand.Bet;
+    if (hand.Cards.length >= 5) {
+        player.Dollars += hand.Bet;
         return "Win";
     }
 
-    if (playerHand.IsBlackJack()) {
-        player.Dollars -= (playerHand.Bet * 1.5);
+    if (hand.IsBlackJack()) {
+        player.Dollars += (hand.Bet * 1.5);
         return "Blackjack";
     }
 
     if (dealerHand.IsBust()) {
-        player.Dollars += playerHand.Bet;
+        player.Dollars += hand.Bet;
         return "Win";
     }
 
-    if (playerHand.BestValue() > dealerHand.BestValue()) {
-        player.Dollars += playerHand.Bet;
+    if (hand.BestValue() > dealerHand.BestValue()) {
+        player.Dollars += hand.Bet;
         return "Win";
     }
 
-    if (playerHand.BestValue() == dealerHand.BestValue()) {
+    if (hand.BestValue() == dealerHand.BestValue()) {
         return "Push";
     }
 
-    player.Dollars -= playerHand.Bet;
+    player.Dollars -= hand.Bet;
     return "Lose";
 }
 
