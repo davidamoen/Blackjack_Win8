@@ -263,7 +263,6 @@ var CardCounter = WinJS.Class.define(function () { },
         }
     });
 
-
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // end Shoe class
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -413,6 +412,7 @@ var Player = WinJS.Class.define(
         this.Name = name;
         this.Dollars = dollars;
         this.Hands = [];
+        this.ScoreKeeper = new ScoreKeeper();
     },
     {
         Name: '',
@@ -422,7 +422,8 @@ var Player = WinJS.Class.define(
         Wins: 0,
         Losses: 0,
         Pushes: 0,
-        Blackjacks: 0
+        Blackjacks: 0,
+        ScoreKeeper: null
     });
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -594,6 +595,7 @@ var Game = WinJS.Class.define(
 
                         if (hand.IsComplete) {
                             infoDisplay.innerHTML += "<p class='bold'>" + DecisionHelper.GetResult(this.Dealer.Hands[0], hand, player) + "</p>";
+                            //infoDisplay.innerHTML += "<p class='bold'>Wins: " + DecisionHelper.GetResult(this.Dealer.Hands[0], hand, player) + "</p>";
                         }
                         else {
                             if (hand.IsBust()) {
@@ -602,34 +604,21 @@ var Game = WinJS.Class.define(
                             else if (!hand.IsStand && !hand.IsDoubleDown) {
                                 infoDisplay.innerHTML += "<p class='bold'>Recomendation: " + DecisionHelper.MakeDecision(this.Dealer.Hands[0], hand) + "</p>";
                             }
-
-                            /*
-                            if (!hand.IsBust() && !hand.IsDoubleDown && !hand.IsStand) {
-                                var acceptButton = document.createElement('button');
-                                acceptButton.Recommendation = DecisionHelper.MakeDecision(this.Dealer.Hands[0], hand);
-                                acceptButton.Game = this;
-                                acceptButton.Hand = hand;
-                                acceptButton.Player = player;
-                                acceptButton.innerText = "Accept";
-                                acceptButton.addEventListener("click", this.AcceptRecommendation);
-                                acceptButton.classList.add("accept");
-                                infoDisplay.appendChild(acceptButton);
-                            }
-                            */
                         }
-                        handDisplay.innerHTML += "<br /><div class='playerName'>" + player.Name + " ($" + player.Dollars + ")</div>";
 
                         if (player.Name == "Dealer") {
                             dealerDiv.appendChild(handDisplay);
                         }
                         else {
+                            handDisplay.innerHTML += "<br /><div class='playerName'>" + player.Name + " ($" + player.Dollars + ")</div>";
+                            handDisplay.innerHTML += "<br /><div class='playerName'>Wins: " + player.ScoreKeeper.Wins + "</div>";
+                            handDisplay.innerHTML += "<br /><div class='playerName'>Losses: " + player.ScoreKeeper.Losses + "</div>";
+                            handDisplay.innerHTML += "<br /><div class='playerName'>Pushes: " + player.ScoreKeeper.Pushes + "</div>";
+
                             handDisplay.appendChild(infoDisplay);
                             resultsDiv.appendChild(handDisplay);
                         }
-
                     }
-
-
                 }
             }
         },
@@ -743,44 +732,87 @@ DecisionHelper.MakeDecision = function(dealerHand, playerHand)
 }
 
 DecisionHelper.GetResult = function (dealerHand, hand, player) {
-
+    var sk = new ScoreKeeper();
     if (hand.IsBust()) {
         player.Dollars -= hand.Bet;
-        return "Bust";
+        player.ScoreKeeper.Losses++;
+        var result = "Bust";
+        sk.Update(result);
+        return result;
     }
 
     if (hand.Cards.length >= 5) {
         player.Dollars += hand.Bet;
-        return "Win";
+        player.ScoreKeeper.Wins++;
+        var result = "Win";
+        sk.Update(result);
+        return result;
     }
 
     if (hand.IsBlackJack()) {
         player.Dollars += (hand.Bet * 1.5);
-        return "Blackjack";
+        player.ScoreKeeper.Wins++;
+        var result = "Blackjack";
+        sk.Update(result);
+        return result;
     }
 
     if (dealerHand.IsBust()) {
         player.Dollars += hand.Bet;
-        return "Win";
+        player.ScoreKeeper.Wins++;
+        var result = "Win";
+        sk.Update(result);
+        return result;
     }
 
     if (hand.BestValue() > dealerHand.BestValue()) {
         player.Dollars += hand.Bet;
-        return "Win";
+        player.ScoreKeeper.Wins++;
+        var result = "Win";
+        sk.Update(result);
+        return result;
     }
 
     if (hand.BestValue() == dealerHand.BestValue()) {
-        return "Push";
+        var result = "Push";
+        player.ScoreKeeper.Pushes++;
+        sk.Update(result);
+        return result;
     }
 
     player.Dollars -= hand.Bet;
-    return "Lose";
+    player.ScoreKeeper.Losses++;
+    var result = "Lose";
+    sk.Update(result);
+    return result;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // End DecisionHelper class
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
+var ScoreKeeper = WinJS.Class.define(
+function () { },
+{
+    Wins: 0,
+    Losses: 0,
+    Pushes: 0,
+    Update: function (result) {
+        switch (result) {
+            case "Win":
+            case "BlackJack":
+                this.Wins++;
+                break;
+            case "Lose":
+            case "Bust":
+                this.Losses++;
+                break;
+            case "Push":
+                this.Pushes++;
+                break;
+        }
+    }
+});
 
 var Suits = ["Hearts", "Diamonds", "Clubs", "Spades"];
 

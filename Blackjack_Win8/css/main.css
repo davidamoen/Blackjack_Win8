@@ -1,5 +1,4 @@
 ﻿body {
-    font-family:
     background-image: linear-gradient(to bottom, #dfe7eb 0%, #f6f6f6 30%);
 }
 
@@ -14,10 +13,6 @@
 section {
     margin:0px;
     padding:0px;
-    display:-ms-grid;
-    -ms-grid-columns:1fr;
-    -ms-grid-rows: 100px 1fr 80px;
-    overflow:auto;
 }
 
     section header {
@@ -33,7 +28,7 @@ section {
         -ms-grid-row: 2;
         -ms-grid-column: 1;
         min-height:500px;
-        padding:20px;
+        padding:0 20px;
     }
 
     section footer {
@@ -50,7 +45,7 @@ section {
     -ms-flex-direction:row;
     background: #fff;
     -ms-flex-wrap:wrap;
-    width:5000px;
+    width:100%;
 }
 
 #toprow {
@@ -115,6 +110,12 @@ section {
 .playerHand {
     font-weight:bold;
     font-size: 12px;
+}
+
+.playerName {
+    font-size: 12px;
+    padding:0;
+    line-height: 25%;
 }
 
 .Clubs {
