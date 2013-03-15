@@ -502,10 +502,10 @@ var Game = WinJS.Class.define(
                 var handIdx = 0;
                 while (handIdx < player.Hands.length) {
                     var hand = player.Hands[handIdx];
-                    var recommendation = DecisionHelper.MakeDecision(dealerHand, hand);
+                    var recommendation = SDG.MakeDecision(dealerHand, hand);
                     while (recommendation != "Stand" && recommendation != "Bust") {
                         this.AcceptRecommendation(recommendation, hand, player);
-                        recommendation = DecisionHelper.MakeDecision(dealerHand, hand);
+                        recommendation = SDG.MakeDecision(dealerHand, hand);
                     }
                     hand.IsComplete = true;
                     handIdx++;
@@ -594,15 +594,15 @@ var Game = WinJS.Class.define(
                         infoDisplay.classList.add("handInfo");
 
                         if (hand.IsComplete) {
-                            infoDisplay.innerHTML += "<p class='bold'>" + DecisionHelper.GetResult(this.Dealer.Hands[0], hand, player) + "</p>";
-                            //infoDisplay.innerHTML += "<p class='bold'>Wins: " + DecisionHelper.GetResult(this.Dealer.Hands[0], hand, player) + "</p>";
+                            infoDisplay.innerHTML += "<p class='bold'>" + SDG.GetResult(this.Dealer.Hands[0], hand, player) + "</p>";
+                            //infoDisplay.innerHTML += "<p class='bold'>Wins: " + SDG.GetResult(this.Dealer.Hands[0], hand, player) + "</p>";
                         }
                         else {
                             if (hand.IsBust()) {
                                 infoDisplay.innerHTML += "<p class='bold'>Busted!</p>";
                             }
                             else if (!hand.IsStand && !hand.IsDoubleDown) {
-                                infoDisplay.innerHTML += "<p class='bold'>Recomendation: " + DecisionHelper.MakeDecision(this.Dealer.Hands[0], hand) + "</p>";
+                                infoDisplay.innerHTML += "<p class='bold'>Recomendation: " + SDG.MakeDecision(this.Dealer.Hands[0], hand) + "</p>";
                             }
                         }
 
@@ -650,147 +650,8 @@ var Game = WinJS.Class.define(
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
-// DecisionHelper class
+// Start ScoreKeeper class
 //////////////////////////////////////////////////////////////////////////////////////////////////
-function DecisionHelper() { }
- 
-// static method MakeDecision
-DecisionHelper.MakeDecision = function(dealerHand, playerHand)
-{
-    if (playerHand.Cards.length == 5) return "Stand";
-
-    var dm = null;
-
-    if (playerHand.IsSplittable() && playerHand.Cards.length == 2) {
-        var dm = SDG.DecisionMatrix.documentElement.selectSingleNode("section[@name='split']");
-    }
-    else if (playerHand.HasAce() && playerHand.Cards.length == 2) {
-        var dm = SDG.DecisionMatrix.documentElement.selectSingleNode("section[@name='hasAce']");
-    }
-    else {
-        var dm = SDG.DecisionMatrix.documentElement.selectSingleNode("section[@name='standard']");
-    }
-
-    if (dm) {
-
-        // get node for the appropriate dealer upcard
-        var upCardValues = dm.selectSingleNode("dealerUpCard[@value='" + dealerHand.Cards[0].CardType + "']");
-
-        if (upCardValues) {
-            var selector;
-            if (playerHand.IsSplittable()) {
-                selector = playerHand.Cards[0].HighValue();
-            }
-            else if (playerHand.HasAce()) {
-                if (playerHand.Cards.length == 2) {
-                    var nonAce = playerHand.NonAce();
-                    selector = nonAce.HighValue();
-                }
-                else {
-                    if (playerHand.HighValue() <= 21) {
-                        selector = playerHand.HighValue();
-                    }
-                    else {
-                        selector = playerHand.LowValue();
-                    }
-                }
-            }
-            else {
-                selector = playerHand.HighValue();
-            }
-
-            var decisionValue = upCardValues.selectSingleNode("hand[@value='" + selector + "']");
-
-            if (decisionValue) {
-
-                switch (decisionValue.innerText) {
-
-                    case "H":
-                        return "Hit";
-                        break;
-                    case "D":
-                        return "Double Down";
-                        break;
-                    case "S":
-                        return "Stand";
-                        break;
-                    case "SP":
-                        return "Split";
-                        break;
-
-                }
-            }
-            else {
-                return "Bust";
-            }
-        }
-    }
-    else {
-        return "TBD";
-
-    }
-}
-
-DecisionHelper.GetResult = function (dealerHand, hand, player) {
-    var sk = new ScoreKeeper();
-    if (hand.IsBust()) {
-        player.Dollars -= hand.Bet;
-        player.ScoreKeeper.Losses++;
-        var result = "Bust";
-        sk.Update(result);
-        return result;
-    }
-
-    if (hand.Cards.length >= 5) {
-        player.Dollars += hand.Bet;
-        player.ScoreKeeper.Wins++;
-        var result = "Win";
-        sk.Update(result);
-        return result;
-    }
-
-    if (hand.IsBlackJack()) {
-        player.Dollars += (hand.Bet * 1.5);
-        player.ScoreKeeper.Wins++;
-        var result = "Blackjack";
-        sk.Update(result);
-        return result;
-    }
-
-    if (dealerHand.IsBust()) {
-        player.Dollars += hand.Bet;
-        player.ScoreKeeper.Wins++;
-        var result = "Win";
-        sk.Update(result);
-        return result;
-    }
-
-    if (hand.BestValue() > dealerHand.BestValue()) {
-        player.Dollars += hand.Bet;
-        player.ScoreKeeper.Wins++;
-        var result = "Win";
-        sk.Update(result);
-        return result;
-    }
-
-    if (hand.BestValue() == dealerHand.BestValue()) {
-        var result = "Push";
-        player.ScoreKeeper.Pushes++;
-        sk.Update(result);
-        return result;
-    }
-
-    player.Dollars -= hand.Bet;
-    player.ScoreKeeper.Losses++;
-    var result = "Lose";
-    sk.Update(result);
-    return result;
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
-// End DecisionHelper class
-//////////////////////////////////////////////////////////////////////////////////////////////////
-
 var ScoreKeeper = WinJS.Class.define(
 function () { },
 {
@@ -813,6 +674,10 @@ function () { },
         }
     }
 });
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+// End ScoreKeeper class
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
 var Suits = ["Hearts", "Diamonds", "Clubs", "Spades"];
 
@@ -863,6 +728,135 @@ WinJS.Namespace.define("SDG", {
         }
         _game.Dealer.Hands[0].IsComplete = true;
         _game.RefreshDisplay();
+    },
+    GetResult: function (dealerHand, hand, player) {
+        var sk = new ScoreKeeper();
+        if (hand.IsBust()) {
+            player.Dollars -= hand.Bet;
+            player.ScoreKeeper.Losses++;
+            var result = "Bust";
+            sk.Update(result);
+            return result;
+        }
+
+        if (hand.Cards.length >= 5) {
+            player.Dollars += hand.Bet;
+            player.ScoreKeeper.Wins++;
+            var result = "Win";
+            sk.Update(result);
+            return result;
+        }
+
+        if (hand.IsBlackJack()) {
+            player.Dollars += (hand.Bet * 1.5);
+            player.ScoreKeeper.Wins++;
+            var result = "Blackjack";
+            sk.Update(result);
+            return result;
+        }
+
+        if (dealerHand.IsBust()) {
+            player.Dollars += hand.Bet;
+            player.ScoreKeeper.Wins++;
+            var result = "Win";
+            sk.Update(result);
+            return result;
+        }
+
+        if (hand.BestValue() > dealerHand.BestValue()) {
+            player.Dollars += hand.Bet;
+            player.ScoreKeeper.Wins++;
+            var result = "Win";
+            sk.Update(result);
+            return result;
+        }
+
+        if (hand.BestValue() == dealerHand.BestValue()) {
+            var result = "Push";
+            player.ScoreKeeper.Pushes++;
+            sk.Update(result);
+            return result;
+        }
+
+        player.Dollars -= hand.Bet;
+        player.ScoreKeeper.Losses++;
+        var result = "Lose";
+        sk.Update(result);
+        return result;
+    },
+    MakeDecision: function (dealerHand, playerHand) {
+        if (playerHand.Cards.length == 5) return "Stand";
+
+        var dm = null;
+
+        if (playerHand.IsSplittable() && playerHand.Cards.length == 2) {
+            var dm = SDG.DecisionMatrix.documentElement.selectSingleNode("section[@name='split']");
+        }
+        else if (playerHand.HasAce() && playerHand.Cards.length == 2) {
+            var dm = SDG.DecisionMatrix.documentElement.selectSingleNode("section[@name='hasAce']");
+        }
+        else {
+            var dm = SDG.DecisionMatrix.documentElement.selectSingleNode("section[@name='standard']");
+        }
+
+        if (dm) {
+
+            // get node for the appropriate dealer upcard
+            var upCardValues = dm.selectSingleNode("dealerUpCard[@value='" + dealerHand.Cards[0].CardType + "']");
+
+            if (upCardValues) {
+                var selector;
+                if (playerHand.IsSplittable()) {
+                    selector = playerHand.Cards[0].HighValue();
+                }
+                else if (playerHand.HasAce()) {
+                    if (playerHand.Cards.length == 2) {
+                        var nonAce = playerHand.NonAce();
+                        selector = nonAce.HighValue();
+                    }
+                    else {
+                        if (playerHand.HighValue() <= 21) {
+                            selector = playerHand.HighValue();
+                        }
+                        else {
+                            selector = playerHand.LowValue();
+                        }
+                    }
+                }
+                else {
+                    selector = playerHand.HighValue();
+                }
+
+                var decisionValue = upCardValues.selectSingleNode("hand[@value='" + selector + "']");
+
+                if (decisionValue) {
+
+                    switch (decisionValue.innerText) {
+
+                        case "H":
+                            return "Hit";
+                            break;
+                        case "D":
+                            return "Double Down";
+                            break;
+                        case "S":
+                            return "Stand";
+                            break;
+                        case "SP":
+                            return "Split";
+                            break;
+
+                    }
+                }
+                else {
+                    return "Bust";
+                }
+            }
+        }
+        else {
+            return "TBD";
+
+        }
     }
 });
 
