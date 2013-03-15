@@ -69,7 +69,6 @@
     <Content Include="js\classes.js" />
     <Content Include="js\default.js" />
     <Content Include="css\default.css" />
-    <Content Include="js\main.js" />
     <Content Include="js\settings.js" />
     <Content Include="js\tests.js" />
     <None Include="Blackjack_Win8_TemporaryKey.pfx" />
