@@ -818,3 +818,51 @@ var Suits = ["Hearts", "Diamonds", "Clubs", "Spades"];
 
 var CardTypes = ["Ace", "Deuce", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King"];
 
+WinJS.Namespace.define("SDG", {
+    rand: function (min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    },
+    configureSettings: function () {
+        WinJS.Application.onsettings = function (e) {
+            e.detail.applicationcommands = { "blackJackSettings": { title: "Configure Simulation", href: "/html/settings.html" } };
+            WinJS.UI.SettingsFlyout.populateSettings(e);
+            WinJS.Application.start();
+        }
+
+    },
+    setDecisionMatrix: function () {
+        var uri = new Windows.Foundation.Uri("ms-appx:///DecisionMatrix.xml");
+        Windows.Storage.StorageFile.getFileFromApplicationUriAsync(uri).done(
+            function (file) {
+                if (file) {
+                    Windows.Data.Xml.Dom.XmlDocument.loadFromFileAsync(file).done(function (fileContent) {
+                        //var sections = contents.documentElement.selectNodes("//section")
+                        SDG.DecisionMatrix = fileContent;
+                    })
+                }
+            });
+    },
+    DecisionMatrix: null,
+    Deal: function () {
+        if (!_game) {
+            _game = new Game(_settings.playerCount, _settings.deckCount, _settings.shuffleCount);
+        }
+        if (!_game.Shoe) {
+            _game.PrepCards();
+        }
+        _game.Deal();
+        _game.Display();
+        _game.DisplayInfo();
+        document.getElementById("goButton").classList.remove("hidden");
+    },
+    PlayHands: function () {
+        _game.Play();
+        var dealerHand = _game.Dealer.Hands[0];
+        while (dealerHand.DealerMustHit()) {
+            _game.DealCardToHand(dealerHand);
+        }
+        _game.Dealer.Hands[0].IsComplete = true;
+        _game.RefreshDisplay();
+    }
+});
+
