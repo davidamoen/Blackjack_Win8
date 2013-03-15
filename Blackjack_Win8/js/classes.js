@@ -657,22 +657,7 @@ function () { },
 {
     Wins: 0,
     Losses: 0,
-    Pushes: 0,
-    Update: function (result) {
-        switch (result) {
-            case "Win":
-            case "BlackJack":
-                this.Wins++;
-                break;
-            case "Lose":
-            case "Bust":
-                this.Losses++;
-                break;
-            case "Push":
-                this.Pushes++;
-                break;
-        }
-    }
+    Pushes: 0
 });
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -730,12 +715,10 @@ WinJS.Namespace.define("SDG", {
         _game.RefreshDisplay();
     },
     GetResult: function (dealerHand, hand, player) {
-        var sk = new ScoreKeeper();
         if (hand.IsBust()) {
             player.Dollars -= hand.Bet;
             player.ScoreKeeper.Losses++;
             var result = "Bust";
-            sk.Update(result);
             return result;
         }
 
@@ -743,7 +726,6 @@ WinJS.Namespace.define("SDG", {
             player.Dollars += hand.Bet;
             player.ScoreKeeper.Wins++;
             var result = "Win";
-            sk.Update(result);
             return result;
         }
 
@@ -751,7 +733,6 @@ WinJS.Namespace.define("SDG", {
             player.Dollars += (hand.Bet * 1.5);
             player.ScoreKeeper.Wins++;
             var result = "Blackjack";
-            sk.Update(result);
             return result;
         }
 
@@ -759,7 +740,6 @@ WinJS.Namespace.define("SDG", {
             player.Dollars += hand.Bet;
             player.ScoreKeeper.Wins++;
             var result = "Win";
-            sk.Update(result);
             return result;
         }
 
@@ -767,21 +747,18 @@ WinJS.Namespace.define("SDG", {
             player.Dollars += hand.Bet;
             player.ScoreKeeper.Wins++;
             var result = "Win";
-            sk.Update(result);
             return result;
         }
 
         if (hand.BestValue() == dealerHand.BestValue()) {
             var result = "Push";
             player.ScoreKeeper.Pushes++;
-            sk.Update(result);
             return result;
         }
 
         player.Dollars -= hand.Bet;
         player.ScoreKeeper.Losses++;
         var result = "Lose";
-        sk.Update(result);
         return result;
     },
     MakeDecision: function (dealerHand, playerHand) {
