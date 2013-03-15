@@ -488,7 +488,13 @@ var Game = WinJS.Class.define(
                     this.Dealer.Hands.push(new Hand());
                 }
 
-                var nextCard = this.Shoe.Cards.pop();
+                if (this.Shoe.Cards.length > 0) {
+                    var nextCard = this.Shoe.Cards.pop();
+                }
+                else {
+                    this.PrepCards();
+                    var nextCard = this.Shoe.Cards.pop();
+                }
                 this.Shoe.CardCounter.AddCard(nextCard);
                 this.Dealer.Hands[0].Cards.push(nextCard);
             }
@@ -668,19 +674,22 @@ var Suits = ["Hearts", "Diamonds", "Clubs", "Spades"];
 
 var CardTypes = ["Ace", "Deuce", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King"];
 
-WinJS.Namespace.define("SDG", {
-    rand: function (min, max) {
+var SDG = function () { };
+
+    SDG.rand = function (min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
-    },
-    configureSettings: function () {
+    }
+
+    SDG.configureSettings = function () {
         WinJS.Application.onsettings = function (e) {
             e.detail.applicationcommands = { "blackJackSettings": { title: "Configure Simulation", href: "/html/settings.html" } };
             WinJS.UI.SettingsFlyout.populateSettings(e);
             WinJS.Application.start();
         }
 
-    },
-    setDecisionMatrix: function () {
+    }
+
+    SDG.setDecisionMatrix = function (callback) {
         var uri = new Windows.Foundation.Uri("ms-appx:///DecisionMatrix.xml");
         Windows.Storage.StorageFile.getFileFromApplicationUriAsync(uri).done(
             function (file) {
@@ -688,15 +697,15 @@ WinJS.Namespace.define("SDG", {
                     Windows.Data.Xml.Dom.XmlDocument.loadFromFileAsync(file).done(function (fileContent) {
                         //var sections = contents.documentElement.selectNodes("//section")
                         SDG.DecisionMatrix = fileContent;
+
+                        callback();
                     })
                 }
             });
-    },
-    DecisionMatrix: null,
-    Deal: function () {
-        if (!_game) {
-            _game = new Game(_settings.playerCount, _settings.deckCount, _settings.shuffleCount);
-        }
+    }
+
+    SDG.DecisionMatrix = null;
+    SDG.Deal = function () {
         if (!_game.Shoe) {
             _game.PrepCards();
         }
@@ -704,8 +713,8 @@ WinJS.Namespace.define("SDG", {
         _game.Display();
         _game.DisplayInfo();
         document.getElementById("goButton").classList.remove("hidden");
-    },
-    PlayHands: function () {
+    }
+    SDG.PlayHands = function () {
         _game.Play();
         var dealerHand = _game.Dealer.Hands[0];
         while (dealerHand.DealerMustHit()) {
@@ -713,55 +722,48 @@ WinJS.Namespace.define("SDG", {
         }
         _game.Dealer.Hands[0].IsComplete = true;
         _game.RefreshDisplay();
-    },
-    GetResult: function (dealerHand, hand, player) {
+    }
+    SDG.GetResult = function (dealerHand, hand, player) {
         if (hand.IsBust()) {
             player.Dollars -= hand.Bet;
             player.ScoreKeeper.Losses++;
-            var result = "Bust";
-            return result;
+            return "Bust";
         }
 
         if (hand.Cards.length >= 5) {
             player.Dollars += hand.Bet;
             player.ScoreKeeper.Wins++;
-            var result = "Win";
-            return result;
+            return "Win";
         }
 
         if (hand.IsBlackJack()) {
             player.Dollars += (hand.Bet * 1.5);
             player.ScoreKeeper.Wins++;
-            var result = "Blackjack";
-            return result;
+            return "Blackjack";
         }
 
         if (dealerHand.IsBust()) {
             player.Dollars += hand.Bet;
             player.ScoreKeeper.Wins++;
-            var result = "Win";
-            return result;
+            return "Win";
         }
 
         if (hand.BestValue() > dealerHand.BestValue()) {
             player.Dollars += hand.Bet;
             player.ScoreKeeper.Wins++;
-            var result = "Win";
-            return result;
+            return "Win";
         }
 
         if (hand.BestValue() == dealerHand.BestValue()) {
-            var result = "Push";
             player.ScoreKeeper.Pushes++;
-            return result;
+            return "Push";
         }
 
         player.Dollars -= hand.Bet;
         player.ScoreKeeper.Losses++;
-        var result = "Lose";
-        return result;
-    },
-    MakeDecision: function (dealerHand, playerHand) {
+        return "Lose";
+    }
+    SDG.MakeDecision = function (dealerHand, playerHand) {
         if (playerHand.Cards.length == 5) return "Stand";
 
         var dm = null;
@@ -835,5 +837,5 @@ WinJS.Namespace.define("SDG", {
 
         }
     }
-});
+
 
